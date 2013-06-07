@@ -94,6 +94,18 @@ const (
 	BucketOwnerFull   = ACL("bucket-owner-full-control")
 )
 
+// BucketAvailable verifies that a bucket already exists and we have permission 
+// access to it.
+//
+// see http://goo.gl/iUJfX for details.
+func (b *Bucket) BucketAvailable() (bool) {
+  req := &request{
+		method:  "HEAD",
+		bucket:  b.Name,
+	}
+  return b.S3.query(req, nil) == nil
+}
+
 // PutBucket creates a new bucket.
 //
 // See http://goo.gl/ndjnR for details.

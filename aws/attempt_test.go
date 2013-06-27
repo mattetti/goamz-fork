@@ -1,7 +1,7 @@
 package aws_test
 
 import (
-	"launchpad.net/goamz/aws"
+	"github.com/mattetti/goamz-fork/aws"
 	. "launchpad.net/gocheck"
 	"time"
 )

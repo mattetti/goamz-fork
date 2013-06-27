@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"launchpad.net/goamz/aws"
+	"github.com/mattetti/goamz-fork/aws"
 	"github.com/mattetti/goamz-fork/s3"
 	"launchpad.net/goamz/testutil"
 	. "launchpad.net/gocheck"

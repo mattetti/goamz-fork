@@ -14,9 +14,9 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"github.com/mattetti/goamz-fork/aws"
 	"io"
 	"io/ioutil"
-	"github.com/mattetti/goamz-fork/aws"
 	"log"
 	"net"
 	"net/http"
@@ -94,16 +94,16 @@ const (
 	BucketOwnerFull   = ACL("bucket-owner-full-control")
 )
 
-// BucketAvailable verifies that a bucket already exists and we have permission 
+// BucketAvailable verifies that a bucket already exists and if we have permission
 // access to it.
 //
 // see http://goo.gl/iUJfX for details.
-func (b *Bucket) BucketAvailable() (bool) {
-  req := &request{
-		method:  "HEAD",
-		bucket:  b.Name,
+func (b *Bucket) BucketAvailable() bool {
+	req := &request{
+		method: "HEAD",
+		bucket: b.Name,
 	}
-  return b.S3.query(req, nil) == nil
+	return b.S3.query(req, nil) == nil
 }
 
 // PutBucket creates a new bucket.
@@ -153,6 +153,19 @@ func (b *Bucket) Get(path string) (data []byte, err error) {
 	data, err = ioutil.ReadAll(body)
 	body.Close()
 	return data, err
+}
+
+// ObjectAvailable verifies that an object already exists and if we have permission
+// access to it.
+//
+// see http://goo.gl/ZjZeF for details.
+func (b *Bucket) ObjectAvailable(path string) bool {
+	req := &request{
+		method:  "HEAD",
+		baseurl: b.Name + ".s3.amazonaws.com/",
+		path:    path,
+	}
+	return b.S3.query(req, nil) == nil
 }
 
 // GetReader retrieves an object from an S3 bucket.

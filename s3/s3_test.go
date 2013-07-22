@@ -75,21 +75,21 @@ func (s *S) TestBucketAvailable(c *C) {
 	b := s.s3.Bucket("bucket")
 	resp := b.BucketAvailable()
 
-  req := testServer.WaitRequest()
+	req := testServer.WaitRequest()
 	c.Assert(req.Method, Equals, "HEAD")
-  c.Assert(req.Header["Date"], Not(Equals), "")
-  c.Assert(req.Header["Authorization"], Not(Equals), "")
+	c.Assert(req.Header["Date"], Not(Equals), "")
+	c.Assert(req.Header["Authorization"], Not(Equals), "")
 	c.Assert(resp, Equals, true)
 
-  // The bucket doesn't exist
-  testServer.Response(404, nil, "")
-  resp = b.BucketAvailable()
-  c.Assert(resp, Equals, false)
+	// The bucket doesn't exist
+	testServer.Response(404, nil, "")
+	resp = b.BucketAvailable()
+	c.Assert(resp, Equals, false)
 
-  // The bucket exists but we don't have permission
-  testServer.Response(403, nil, "")
-  resp = b.BucketAvailable()
-  c.Assert(resp, Equals, false)
+	// The bucket exists but we don't have permission
+	testServer.Response(403, nil, "")
+	resp = b.BucketAvailable()
+	c.Assert(resp, Equals, false)
 }
 
 // DeleteBucket docs: http://goo.gl/GoBrY

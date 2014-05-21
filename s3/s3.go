@@ -14,7 +14,6 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	"github.com/mattetti/goamz-fork/aws"
 	"io"
 	"io/ioutil"
 	"log"
@@ -25,6 +24,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mattetti/goamz-fork/aws"
 )
 
 const debug = false
@@ -67,8 +68,8 @@ func (s3 *S3) Bucket(name string) *Bucket {
 	return &Bucket{s3, name}
 }
 
-var createBucketConfiguration = `<CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"> 
-  <LocationConstraint>%s</LocationConstraint> 
+var createBucketConfiguration = `<CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+  <LocationConstraint>%s</LocationConstraint>
 </CreateBucketConfiguration>`
 
 // locationConstraint returns an io.Reader specifying a LocationConstraint if
@@ -199,6 +200,21 @@ func (b *Bucket) GetReader(path string) (rc io.ReadCloser, err error) {
 func (b *Bucket) Put(path string, data []byte, contType string, perm ACL) error {
 	body := bytes.NewBuffer(data)
 	return b.PutReader(path, body, int64(len(data)), contType, perm)
+}
+
+func (b *Bucket) Copy(path string, fromPath string, perm ACL) error {
+	headers := map[string][]string{
+		"x-amz-acl":         {string(perm)},
+		"x-amz-copy-source": {fromPath},
+	}
+
+	req := &request{
+		method:  "PUT",
+		bucket:  b.Name,
+		path:    path,
+		headers: headers,
+	}
+	return b.S3.query(req, nil)
 }
 
 // PutReader inserts an object into the S3 bucket by consuming data

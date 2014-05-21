@@ -202,6 +202,11 @@ func (b *Bucket) Put(path string, data []byte, contType string, perm ACL) error 
 	return b.PutReader(path, body, int64(len(data)), contType, perm)
 }
 
+// Copy copies an object from another bucket into this bucket
+// Note: fromPath does not assume this bucket and must include bucket name
+// e.g. b.Copy('mypath/myfile', '/yourbucket/yourpath/yourfile', s3.AuthenticatedRead)
+//
+// See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html for details
 func (b *Bucket) Copy(path string, fromPath string, perm ACL) error {
 	headers := map[string][]string{
 		"x-amz-acl":         {string(perm)},

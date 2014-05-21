@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"testing"
 
+	"time"
+
 	"github.com/mattetti/goamz-fork/aws"
 	"github.com/mattetti/goamz-fork/s3"
 	"launchpad.net/goamz/testutil"
 	. "launchpad.net/gocheck"
-	"time"
 )
 
 func Test(t *testing.T) {
@@ -218,6 +219,23 @@ func (s *S) TestPutReader(c *C) {
 	c.Assert(req.Header["Content-Length"], DeepEquals, []string{"7"})
 	//c.Assert(req.Header["Content-MD5"], Equals, "...")
 	c.Assert(req.Header["X-Amz-Acl"], DeepEquals, []string{"private"})
+}
+
+// CopyObject docs: http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html
+func (s *S) TestCopyObject(c *C) {
+	testServer.Response(200, nil, "")
+
+	b := s.s3.Bucket("bucket")
+	err := b.Copy("name", "/bucket/original", s3.AuthenticatedRead)
+	c.Assert(err, IsNil)
+
+	req := testServer.WaitRequest()
+	c.Assert(req.Method, Equals, "PUT")
+	c.Assert(req.URL.Path, Equals, "/bucket/name")
+	c.Assert(req.Header["Date"], Not(DeepEquals), []string{""})
+	c.Assert(req.Header["X-Amz-Acl"], DeepEquals, []string{"authenticated-read"})
+	c.Assert(req.Header["X-Amz-Acl"], DeepEquals, []string{"authenticated-read"})
+	c.Assert(req.Header["X-Amz-Copy-Source"], DeepEquals, []string{"/bucket/original"})
 }
 
 // DelObject docs: http://goo.gl/APeTt

@@ -209,8 +209,9 @@ func (b *Bucket) Put(path string, data []byte, contType string, perm ACL) error 
 // See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html for details
 func (b *Bucket) Copy(path string, fromPath string, perm ACL) error {
 	headers := map[string][]string{
-		"x-amz-acl":         {string(perm)},
-		"x-amz-copy-source": {fromPath},
+		"x-amz-acl":                    {string(perm)},
+		"x-amz-copy-source":            {fromPath},
+		"x-amz-server-side-encryption": {"AES256"},
 	}
 
 	req := &request{
@@ -226,9 +227,10 @@ func (b *Bucket) Copy(path string, fromPath string, perm ACL) error {
 // from r until EOF.
 func (b *Bucket) PutReader(path string, r io.Reader, length int64, contType string, perm ACL) error {
 	headers := map[string][]string{
-		"Content-Length": {strconv.FormatInt(length, 10)},
-		"Content-Type":   {contType},
-		"x-amz-acl":      {string(perm)},
+		"Content-Length":               {strconv.FormatInt(length, 10)},
+		"Content-Type":                 {contType},
+		"x-amz-acl":                    {string(perm)},
+		"x-amz-server-side-encryption": {"AES256"},
 	}
 	req := &request{
 		method:  "PUT",

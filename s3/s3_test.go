@@ -199,6 +199,8 @@ func (s *S) TestPutObject(c *C) {
 	c.Assert(req.Header["Date"], Not(DeepEquals), []string{""})
 	c.Assert(req.Header["Content-Type"], DeepEquals, []string{"content-type"})
 	c.Assert(req.Header["Content-Length"], DeepEquals, []string{"7"})
+	// default aes encryption
+	c.Assert(req.Header["X-Amz-Server-Side-Encryption"], DeepEquals, []string{"AES256"})
 	//c.Assert(req.Header["Content-MD5"], DeepEquals, "...")
 	c.Assert(req.Header["X-Amz-Acl"], DeepEquals, []string{"private"})
 }
@@ -224,6 +226,8 @@ func (s *S) TestPutObjectWithHeaders(c *C) {
 	c.Assert(req.Header["Content-Length"], DeepEquals, []string{"7"})
 	//c.Assert(req.Header["Content-MD5"], DeepEquals, "...")
 	c.Assert(req.Header["X-Amz-Acl"], DeepEquals, []string{"private"})
+	// default encryption: AES
+	c.Assert(req.Header["X-Amz-Server-Side-Encryption"], DeepEquals, []string{"AES256"})
 	// custom headers
 	c.Assert(req.Header["Content-Type"], DeepEquals, []string{"test"})
 	c.Assert(req.Header["Content-Encoding"], DeepEquals, []string{"foo"})
@@ -243,6 +247,8 @@ func (s *S) TestPutReader(c *C) {
 	c.Assert(req.Header["Date"], Not(DeepEquals), []string{""})
 	c.Assert(req.Header["Content-Type"], DeepEquals, []string{"content-type"})
 	c.Assert(req.Header["Content-Length"], DeepEquals, []string{"7"})
+	// default encryption
+	c.Assert(req.Header["X-Amz-Server-Side-Encryption"], DeepEquals, []string{"AES256"})
 	//c.Assert(req.Header["Content-MD5"], Equals, "...")
 	c.Assert(req.Header["X-Amz-Acl"], DeepEquals, []string{"private"})
 }
@@ -267,6 +273,8 @@ func (s *S) TestPutReaderWithHeaders(c *C) {
 	c.Assert(req.Header["Content-Length"], DeepEquals, []string{"7"})
 	//c.Assert(req.Header["Content-MD5"], Equals, "...")
 	c.Assert(req.Header["X-Amz-Acl"], DeepEquals, []string{"private"})
+	/// default encryption
+	c.Assert(req.Header["X-Amz-Server-Side-Encryption"], DeepEquals, []string{"AES256"})
 	// custom headers
 	c.Assert(req.Header["Content-Type"], DeepEquals, []string{"TestPutReaderWithHeaders"})
 	c.Assert(req.Header["Content-Encoding"], DeepEquals, []string{"bar"})

@@ -107,10 +107,21 @@ func (b *Bucket) Multi(key, contType string, perm ACL) (*Multi, error) {
 // See http://goo.gl/XP8kL for details.
 func (b *Bucket) InitMulti(key string, contType string, perm ACL) (*Multi, error) {
 	headers := map[string][]string{
-		"Content-Type":   {contType},
-		"Content-Length": {"0"},
-		"x-amz-acl":      {string(perm)},
+		"Content-Type": {contType},
 	}
+	return b.InitMultiWithHeaders(key, headers, perm)
+}
+
+func (b *Bucket) InitMultiWithHeaders(key string, custHeaders CustomHeaders, perm ACL) (*Multi, error) {
+	headers := map[string][]string{
+		"Content-Length":               {"0"},
+		"x-amz-acl":                    {string(perm)},
+		"x-amz-server-side-encryption": {"AES256"},
+	}
+	for k, v := range custHeaders {
+		headers[k] = v
+	}
+
 	params := map[string][]string{
 		"uploads": {""},
 	}

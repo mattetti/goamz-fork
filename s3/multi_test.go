@@ -2,11 +2,12 @@ package s3_test
 
 import (
 	"encoding/xml"
-	"github.com/mattetti/goamz-fork/s3"
 	"io"
 	"io/ioutil"
-	. "launchpad.net/gocheck"
 	"strings"
+
+	"github.com/mattetti/goamz-fork/s3"
+	. "launchpad.net/gocheck"
 )
 
 func (s *S) TestInitMulti(c *C) {
@@ -23,6 +24,35 @@ func (s *S) TestInitMulti(c *C) {
 	c.Assert(req.Header["Content-Type"], DeepEquals, []string{"text/plain"})
 	c.Assert(req.Header["X-Amz-Acl"], DeepEquals, []string{"private"})
 	c.Assert(req.Form["uploads"], DeepEquals, []string{""})
+	// default aes encryption
+	//fmt.Printf("%#v\n", req.Header)
+	c.Assert(req.Header["X-Amz-Server-Side-Encryption"], DeepEquals, []string{"AES256"})
+
+	c.Assert(multi.UploadId, Matches, "JNbR_[A-Za-z0-9.]+QQ--")
+}
+
+func (s *S) TestInitMultiWithHeaders(c *C) {
+	testServer.Response(200, nil, InitMultiResultDump)
+
+	b := s.s3.Bucket("sample")
+
+	headers := s3.CustomHeaders{
+		"Content-Type":     {"test/data"},
+		"Content-Encoding": {"gzip-test"},
+	}
+	multi, err := b.InitMultiWithHeaders("multi", headers, s3.Private)
+	c.Assert(err, IsNil)
+
+	req := testServer.WaitRequest()
+	c.Assert(req.Method, Equals, "POST")
+	c.Assert(req.URL.Path, Equals, "/sample/multi")
+	c.Assert(req.Header["Content-Type"], DeepEquals, []string{"test/data"})
+	c.Assert(req.Header["X-Amz-Acl"], DeepEquals, []string{"private"})
+	c.Assert(req.Form["uploads"], DeepEquals, []string{""})
+	// default aes encryption
+	c.Assert(req.Header["X-Amz-Server-Side-Encryption"], DeepEquals, []string{"AES256"})
+	// custom headers
+	c.Assert(req.Header["Content-Encoding"], DeepEquals, []string{"gzip-test"})
 
 	c.Assert(multi.UploadId, Matches, "JNbR_[A-Za-z0-9.]+QQ--")
 }

@@ -204,9 +204,9 @@ func (b *Bucket) Put(path string, data []byte, contType string, perm ACL) error 
 	return b.PutReader(path, body, int64(len(data)), contType, perm)
 }
 
-func (b *Bucket) PutWithHeaders(path string, data []byte, customHeaders CustomHeaders, perm ACL) error {
+func (b *Bucket) PutWithHeaders(path string, data []byte, custHeaders CustomHeaders, perm ACL) error {
 	body := bytes.NewBuffer(data)
-	return b.PutReaderWithHeaders(path, body, int64(len(data)), customHeaders, perm)
+	return b.PutReaderWithHeaders(path, body, int64(len(data)), custHeaders, perm)
 }
 
 // Copy copies an object from another bucket into this bucket
@@ -233,33 +233,22 @@ func (b *Bucket) Copy(path string, fromPath string, perm ACL) error {
 // PutReader inserts an object into the S3 bucket by consuming data
 // from r until EOF.
 func (b *Bucket) PutReader(path string, r io.Reader, length int64, contType string, perm ACL) error {
-	headers := map[string][]string{
-		"Content-Length":               {strconv.FormatInt(length, 10)},
-		"Content-Type":                 {contType},
-		"x-amz-acl":                    {string(perm)},
-		"x-amz-server-side-encryption": {"AES256"},
+	customHeaders := map[string][]string{
+		"Content-Type": {contType},
 	}
-	req := &request{
-		method:  "PUT",
-		bucket:  b.Name,
-		path:    path,
-		headers: headers,
-		payload: r,
-	}
-	return b.S3.query(req, nil)
+	return b.PutReaderWithHeaders(path, r, length, customHeaders, perm)
 }
 
 // PutReaderWithHeaders is similar to PutReader but with custom headers
 // the required, calculated headers are automatically assigned.
 // Useful to set more than just Content-Type.
-func (b *Bucket) PutReaderWithHeaders(path string, r io.Reader, length int64, customHeaders CustomHeaders, perm ACL) error {
-
+func (b *Bucket) PutReaderWithHeaders(path string, r io.Reader, length int64, custHeaders CustomHeaders, perm ACL) error {
 	headers := map[string][]string{
 		"Content-Length":               {strconv.FormatInt(length, 10)},
 		"x-amz-acl":                    {string(perm)},
 		"x-amz-server-side-encryption": {"AES256"},
 	}
-	for k, v := range customHeaders {
+	for k, v := range custHeaders {
 		headers[k] = v
 	}
 

@@ -49,6 +49,8 @@ type Owner struct {
 	DisplayName string
 }
 
+type CustomHeaders map[string][]string
+
 var attempts = aws.AttemptStrategy{
 	Min:   5,
 	Total: 5 * time.Second,
@@ -202,6 +204,11 @@ func (b *Bucket) Put(path string, data []byte, contType string, perm ACL) error 
 	return b.PutReader(path, body, int64(len(data)), contType, perm)
 }
 
+func (b *Bucket) PutWithHeaders(path string, data []byte, customHeaders CustomHeaders, perm ACL) error {
+	body := bytes.NewBuffer(data)
+	return b.PutReaderWithHeaders(path, body, int64(len(data)), customHeaders, perm)
+}
+
 // Copy copies an object from another bucket into this bucket
 // Note: fromPath does not assume this bucket and must include bucket name
 // e.g. b.Copy('mypath/myfile', '/yourbucket/yourpath/yourfile', s3.AuthenticatedRead)
@@ -232,6 +239,30 @@ func (b *Bucket) PutReader(path string, r io.Reader, length int64, contType stri
 		"x-amz-acl":                    {string(perm)},
 		"x-amz-server-side-encryption": {"AES256"},
 	}
+	req := &request{
+		method:  "PUT",
+		bucket:  b.Name,
+		path:    path,
+		headers: headers,
+		payload: r,
+	}
+	return b.S3.query(req, nil)
+}
+
+// PutReaderWithHeaders is similar to PutReader but with custom headers
+// the required, calculated headers are automatically assigned.
+// Useful to set more than just Content-Type.
+func (b *Bucket) PutReaderWithHeaders(path string, r io.Reader, length int64, customHeaders CustomHeaders, perm ACL) error {
+
+	headers := map[string][]string{
+		"Content-Length":               {strconv.FormatInt(length, 10)},
+		"x-amz-acl":                    {string(perm)},
+		"x-amz-server-side-encryption": {"AES256"},
+	}
+	for k, v := range customHeaders {
+		headers[k] = v
+	}
+
 	req := &request{
 		method:  "PUT",
 		bucket:  b.Name,

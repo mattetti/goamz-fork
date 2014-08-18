@@ -165,7 +165,8 @@ func (b *Bucket) Get(path string) (data []byte, err error) {
 func (b *Bucket) ObjectAvailable(path string) bool {
 	req := &request{
 		method:  "HEAD",
-		baseurl: b.Name + ".s3.amazonaws.com/",
+		bucket:  b.Name,
+		baseurl: "s3.amazonaws.com",
 		path:    path,
 	}
 	return b.S3.query(req, nil) == nil

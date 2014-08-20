@@ -27,11 +27,12 @@ package sns
 import (
 	"encoding/xml"
 	"errors"
-	"launchpad.net/goamz/aws"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/mattetti/goamz-fork/aws"
 )
 
 // The SNS type encapsulates operation with an SNS region.

@@ -424,6 +424,26 @@ func (b *Bucket) SignedURL(path string, expires time.Time) string {
 	return u.String()
 }
 
+func (b *Bucket) SignedAttachmentURL(path, filename string, expires time.Time) string {
+	req := &request{
+		bucket: b.Name,
+		path:   path,
+		params: url.Values{
+			"Expires":                      {strconv.FormatInt(expires.Unix(), 10)},
+			"response-content-disposition": {fmt.Sprintf("attachment; filename=\"%s\"", filename)},
+		},
+	}
+	err := b.S3.prepare(req)
+	if err != nil {
+		panic(err)
+	}
+	u, err := req.url()
+	if err != nil {
+		panic(err)
+	}
+	return u.String()
+}
+
 type request struct {
 	method   string
 	bucket   string

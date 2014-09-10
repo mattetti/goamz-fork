@@ -172,18 +172,33 @@ func (b *Bucket) ObjectAvailable(path string) bool {
 	return b.S3.query(req, nil) == nil
 }
 
-// GetReader retrieves an object from an S3 bucket.
+// GetReader retrieves an object from a S3 bucket.
 // It is the caller's responsibility to call Close on rc when
 // finished reading.
 func (b *Bucket) GetReader(path string) (rc io.ReadCloser, err error) {
-	req := &request{
-		bucket: b.Name,
-		path:   path,
+	return b.GetReaderWithHeaders(path, nil)
+}
+
+// GetReaderWithHeaders retrieves an object from a S3 bucket but also passes custom headers.
+// It is the caller's responsibility to call Close on rc when
+// finished reading.
+// http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectGET.html explains the custom request headers one might want to use.
+func (b *Bucket) GetReaderWithHeaders(path string, custHeaders CustomHeaders) (rc io.ReadCloser, err error) {
+	headers := map[string][]string{}
+	for k, v := range custHeaders {
+		headers[k] = v
 	}
-	err = b.S3.prepare(req)
-	if err != nil {
+
+	req := &request{
+		bucket:  b.Name,
+		path:    path,
+		headers: headers,
+	}
+
+	if err := b.S3.prepare(req); err != nil {
 		return nil, err
 	}
+
 	for attempt := attempts.Start(); attempt.Next(); {
 		hresp, err := b.S3.run(req)
 		if shouldRetry(err) && attempt.HasNext() {

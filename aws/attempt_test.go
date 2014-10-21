@@ -1,9 +1,10 @@
 package aws_test
 
 import (
-	"github.com/mattetti/goamz-fork/aws"
-	. "launchpad.net/gocheck"
 	"time"
+
+	"github.com/mattetti/goamz-fork/aws"
+	. "gopkg.in/check.v1"
 )
 
 func (S) TestAttemptTiming(c *C) {

@@ -1,11 +1,12 @@
 package iam_test
 
 import (
-	"launchpad.net/goamz/aws"
-	"launchpad.net/goamz/iam"
-	"launchpad.net/goamz/testutil"
-	. "launchpad.net/gocheck"
 	"net/url"
+
+	"github.com/mattetti/goamz-fork/aws"
+	"github.com/mattetti/goamz-fork/iam"
+	"github.com/mattetti/goamz-fork/testutil"
+	. "gopkg.in/check.v1"
 )
 
 // AmazonServer represents an Amazon AWS server.

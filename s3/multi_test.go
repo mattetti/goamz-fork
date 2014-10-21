@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/mattetti/goamz-fork/s3"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestInitMulti(c *C) {

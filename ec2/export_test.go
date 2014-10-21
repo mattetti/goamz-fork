@@ -1,8 +1,9 @@
 package ec2
 
 import (
-	"launchpad.net/goamz/aws"
 	"time"
+
+	"github.com/mattetti/goamz-fork/aws"
 )
 
 func Sign(auth aws.Auth, method, path string, params map[string]string, host string) {

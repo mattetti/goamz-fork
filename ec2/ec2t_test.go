@@ -2,13 +2,14 @@ package ec2_test
 
 import (
 	"fmt"
-	"launchpad.net/goamz/aws"
-	"launchpad.net/goamz/ec2"
-	"launchpad.net/goamz/ec2/ec2test"
-	"launchpad.net/goamz/testutil"
-	. "launchpad.net/gocheck"
 	"regexp"
 	"sort"
+
+	"github.com/mattetti/goamz-fork/aws"
+	"github.com/mattetti/goamz-fork/ec2"
+	"github.com/mattetti/goamz-fork/ec2/ec2test"
+	"github.com/mattetti/goamz-fork/testutil"
+	. "gopkg.in/check.v1"
 )
 
 // LocalServer represents a local ec2test fake server.

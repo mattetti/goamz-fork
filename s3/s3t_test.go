@@ -4,7 +4,7 @@ import (
 	"github.com/mattetti/goamz-fork/aws"
 	"github.com/mattetti/goamz-fork/s3"
 	"github.com/mattetti/goamz-fork/s3/s3test"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 type LocalServer struct {

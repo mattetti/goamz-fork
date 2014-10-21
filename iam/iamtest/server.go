@@ -7,11 +7,12 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"launchpad.net/goamz/iam"
 	"net"
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/mattetti/goamz-fork/iam"
 )
 
 type action struct {

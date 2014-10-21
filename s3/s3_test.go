@@ -10,8 +10,8 @@ import (
 
 	"github.com/mattetti/goamz-fork/aws"
 	"github.com/mattetti/goamz-fork/s3"
-	"launchpad.net/goamz/testutil"
-	. "launchpad.net/gocheck"
+	"github.com/mattetti/goamz-fork/testutil"
+	. "gopkg.in/check.v1"
 )
 
 func Test(t *testing.T) {

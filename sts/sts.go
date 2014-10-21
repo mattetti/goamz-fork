@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goamz/goamz/aws"
+	"github.com/mattetti/goamz-fork/aws"
 )
 
 // The STS type encapsulates operations within a specific EC2 region.
@@ -80,10 +80,11 @@ func (sts *STS) query(params map[string]string, resp interface{}) error {
 
 	hreq.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
 
-	token := sts.Auth.Token()
-	if token != "" {
-		hreq.Header.Set("X-Amz-Security-Token", token)
-	}
+	// MNA: We don't need this, we just want GetFederationToken which doesn't need it.
+	// 	token := sts.Auth.Token()
+	// 	if token != "" {
+	// 		hreq.Header.Set("X-Amz-Security-Token", token)
+	// 	}
 
 	signer := aws.NewV4Signer(sts.Auth, "sts", sts.Region)
 	signer.Sign(hreq)

@@ -15,7 +15,6 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
-	"launchpad.net/goamz/aws"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -23,6 +22,8 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/mattetti/goamz-fork/aws"
 )
 
 const debug = false

@@ -6,7 +6,7 @@ import (
 	"github.com/mattetti/goamz-fork/aws"
 	"github.com/mattetti/goamz-fork/exp/sns"
 	"github.com/mattetti/goamz-fork/testutil"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 func Test(t *testing.T) {

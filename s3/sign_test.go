@@ -3,7 +3,7 @@ package s3_test
 import (
 	"github.com/mattetti/goamz-fork/aws"
 	"github.com/mattetti/goamz-fork/s3"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 // S3 ReST authentication docs: http://goo.gl/G1LrK

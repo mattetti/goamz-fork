@@ -1,11 +1,12 @@
 package ec2_test
 
 import (
-	"launchpad.net/goamz/aws"
-	"launchpad.net/goamz/ec2"
-	"launchpad.net/goamz/testutil"
-	. "launchpad.net/gocheck"
 	"testing"
+
+	"github.com/mattetti/goamz-fork/aws"
+	"github.com/mattetti/goamz-fork/ec2"
+	"github.com/mattetti/goamz-fork/testutil"
+	. "gopkg.in/check.v1"
 )
 
 func Test(t *testing.T) {

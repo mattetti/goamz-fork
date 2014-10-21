@@ -17,8 +17,9 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"launchpad.net/goamz/aws"
 	"net/http"
+
+	"github.com/mattetti/goamz-fork/aws"
 	//"net/http/httputil"
 	"net/url"
 	"strconv"

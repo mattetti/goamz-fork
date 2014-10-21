@@ -4,12 +4,13 @@ package iam
 
 import (
 	"encoding/xml"
-	"launchpad.net/goamz/aws"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mattetti/goamz-fork/aws"
 )
 
 // The IAM type encapsulates operations operations with the IAM endpoint.

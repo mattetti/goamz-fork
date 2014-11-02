@@ -158,6 +158,29 @@ func (b *Bucket) Get(path string) (data []byte, err error) {
 	return data, err
 }
 
+// Metadata returns the metadata assigned to the key available at the designed path.
+
+// see http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectHEAD.html for details.
+func (b *Bucket) Metadata(path string) (map[string][]string, error) {
+	req := &request{
+		method:  "HEAD",
+		bucket:  b.Name,
+		baseurl: "s3.amazonaws.com",
+		path:    path,
+	}
+
+	err := b.S3.prepare(req)
+	if err != nil {
+		return nil, err
+	}
+	hresp, err := b.S3.run(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return hresp.Header, nil
+}
+
 // ObjectAvailable verifies that an object already exists and if we have permission
 // access to it.
 //
@@ -231,11 +254,44 @@ func (b *Bucket) PutWithHeaders(path string, data []byte, custHeaders CustomHead
 //
 // See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html for details
 func (b *Bucket) Copy(path string, fromPath string, perm ACL) error {
+	return b.CopyWithHeaders(path, fromPath, nil, perm)
+}
+
+// CopyWithHeaders copies an object from another bucket into this bucket and can set/pass custom headers.
+// If you need to update an object's metadata, you need to use this method with the following custom header
+// `x-amz-metadata-directive: REPLACE`.
+//  Note that any metadata you do not include in the old dictionary will be dropped. So to preserve old attributes
+//  you need to first collect the metadata you want to use and send it as a custom header.
+// See http://stackoverflow.com/questions/4754383/how-to-change-metadata-on-an-object-in-amazon-s3
+// Note: fromPath does not assume this bucket and must include bucket name
+// e.g. b.Copy('mypath/myfile', '/yourbucket/yourpath/yourfile', s3.AuthenticatedRead, nil)
+//
+// See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html for details
+func (b *Bucket) CopyWithHeaders(path string, fromPath string, custHeaders CustomHeaders, perm ACL) error {
 	headers := map[string][]string{
-		"x-amz-acl":                    {string(perm)},
-		"x-amz-copy-source":            {fromPath},
-		"x-amz-server-side-encryption": {"AES256"},
+		"x-amz-copy-source": {fromPath},
 	}
+
+	if custHeaders != nil {
+		/*
+					// get original headers since they don't get copied over when copy/editing headers
+			    // this is disabled since it copies all metadata, not the one fields we need.
+					originHeaders, err := b.Metadata(strings.TrimPrefix(fromPath, fmt.Sprintf("/%s/", b.Name)))
+					if err != nil {
+						return err
+					}
+					for k, v := range originHeaders {
+						headers[k] = v
+					}
+		*/
+		// update using the ones we just received.
+		for k, v := range custHeaders {
+			headers[k] = v
+		}
+	}
+
+	headers["x-amz-acl"] = []string{string(perm)}
+	headers["x-amz-server-side-encryption"] = []string{"AES256"}
 
 	req := &request{
 		method:  "PUT",

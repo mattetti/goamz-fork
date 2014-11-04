@@ -159,7 +159,6 @@ func (b *Bucket) Get(path string) (data []byte, err error) {
 }
 
 // Metadata returns the metadata assigned to the key available at the designed path.
-
 // see http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectHEAD.html for details.
 func (b *Bucket) Metadata(path string) (map[string][]string, error) {
 	req := &request{
@@ -495,6 +494,30 @@ func (b *Bucket) SignedURL(path string, expires time.Time) string {
 	return u.String()
 }
 
+// SignedHeadURL returns a signed URL to be used when performing a HEAD request.
+// This is different from the Metadata function, which returns the actual headers.
+// A use-case for this is, for example, when a front-end will need a URL that they
+// can use to poll until the object is present.
+func (b *Bucket) SignedHeadURL(path string, expires time.Time) string {
+	req := &request{
+		bucket: b.Name,
+		path:   path,
+		method: "HEAD",
+		params: url.Values{"Expires": {strconv.FormatInt(expires.Unix(), 10)}},
+	}
+	err := b.S3.prepare(req)
+	if err != nil {
+		panic(err)
+	}
+	u, err := req.url()
+	if err != nil {
+		panic(err)
+	}
+	return u.String()
+}
+
+// SignedAttachmentURL returns a signed url that causes the object to be downloaded instead of
+// accessed through the web interface.
 func (b *Bucket) SignedAttachmentURL(path, filename string, expires time.Time) string {
 	req := &request{
 		bucket: b.Name,

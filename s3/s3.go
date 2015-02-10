@@ -234,6 +234,44 @@ func (b *Bucket) GetReaderWithHeaders(path string, custHeaders CustomHeaders) (r
 	panic("unreachable")
 }
 
+// amazonShouldEscape returns true if byte should be escaped
+// From https://github.com/mitchellh/goamz
+func amazonShouldEscape(c byte) bool {
+	return !((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+		(c >= '0' && c <= '9') || c == '_' || c == '-' || c == '~' || c == '.' || c == '/' || c == ':')
+}
+
+// amazonEscape does uri escaping exactly as Amazon does
+// From https://github.com/mitchellh/goamz
+func amazonEscape(s string) string {
+	hexCount := 0
+
+	for i := 0; i < len(s); i++ {
+		if amazonShouldEscape(s[i]) {
+			hexCount++
+		}
+	}
+
+	if hexCount == 0 {
+		return s
+	}
+
+	t := make([]byte, len(s)+2*hexCount)
+	j := 0
+	for i := 0; i < len(s); i++ {
+		if c := s[i]; amazonShouldEscape(c) {
+			t[j] = '%'
+			t[j+1] = "0123456789ABCDEF"[c>>4]
+			t[j+2] = "0123456789ABCDEF"[c&15]
+			j += 3
+		} else {
+			t[j] = s[i]
+			j++
+		}
+	}
+	return string(t)
+}
+
 // Put inserts an object into the S3 bucket.
 //
 // See http://goo.gl/FEBPD for details.
@@ -268,6 +306,8 @@ func (b *Bucket) Copy(path string, fromPath string, perm ACL) error {
 // See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html for details
 func (b *Bucket) CopyWithHeaders(path string, fromPath string, custHeaders CustomHeaders, perm ACL) error {
 	headers := map[string][]string{
+		// TODO : Here the `fromPath` should probably be amazonEscape`d, but
+		// I don't want to introduce changes to what already works
 		"x-amz-copy-source": {fromPath},
 	}
 
@@ -626,7 +666,7 @@ func (s3 *S3) prepare(req *request) error {
 	}
 	req.headers["Host"] = []string{u.Host}
 	req.headers["Date"] = []string{time.Now().In(time.UTC).Format(time.RFC1123)}
-	sign(s3.Auth, req.method, req.signpath, req.params, req.headers)
+	sign(s3.Auth, req.method, amazonEscape(req.signpath), req.params, req.headers)
 	return nil
 }
 

@@ -338,7 +338,27 @@ func (b *Bucket) CopyWithHeaders(path string, fromPath string, custHeaders Custo
 		path:    path,
 		headers: headers,
 	}
-	return b.S3.query(req, nil)
+
+	// From http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html
+	//
+	// There are two opportunities for a copy request to return an error. One
+	// can occur when Amazon S3 receives the copy request and the other can
+	// occur while Amazon S3 is copying the files. If the error occurs before
+	// the copy operation starts, you receive a standard Amazon S3 error. If
+	// the error occurs during the copy operation, the error response is
+	// embedded in the 200 OK response. This means that a 200 OK response can
+	// contain either a success or an error. Make sure to design your
+	// application to parse the contents of the response and handle it
+	// appropriately.
+	errRes := &Error{}
+	if err := b.S3.query(req, errRes); err != nil {
+		return err
+	}
+	// check if we have an errRes
+	if errRes.Code != "" {
+		return errRes
+	}
+	return nil
 }
 
 // PutReader inserts an object into the S3 bucket by consuming data
@@ -707,6 +727,7 @@ func (s3 *S3) run(req *request) (*http.Response, error) {
 		log.Printf("} -> %s\n", dump)
 	}
 	if hresp.StatusCode != 200 && hresp.StatusCode != 204 && hresp.StatusCode != 206 {
+		// the Body is closed in buildError
 		return nil, buildError(hresp)
 	}
 	return hresp, err
@@ -723,7 +744,7 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
-	return e.Message
+	return fmt.Sprintf("S3:%s: %s", e.Code, e.Message)
 }
 
 func buildError(r *http.Response) error {

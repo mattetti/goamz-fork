@@ -180,7 +180,7 @@ func (s *S) TestGetNotFound(c *C) {
 	c.Assert(s3err.HostId, Equals, "L4ee/zrm1irFXY5F45fKXIRdOf9ktsKY/8TDVawuMK2jWRb1RF84i1uBzkdNqS5D")
 	c.Assert(s3err.Code, Equals, "NoSuchBucket")
 	c.Assert(s3err.Message, Equals, "The specified bucket does not exist")
-	c.Assert(s3err.Error(), Equals, "The specified bucket does not exist")
+	c.Assert(s3err.Error(), Equals, "S3:NoSuchBucket: The specified bucket does not exist")
 	c.Assert(data, IsNil)
 }
 
@@ -287,6 +287,22 @@ func (s *S) TestCopyObject(c *C) {
 	b := s.s3.Bucket("bucket")
 	err := b.Copy("name", "/bucket/original", s3.AuthenticatedRead)
 	c.Assert(err, IsNil)
+
+	req := testServer.WaitRequest()
+	c.Assert(req.Method, Equals, "PUT")
+	c.Assert(req.URL.Path, Equals, "/bucket/name")
+	c.Assert(req.Header["Date"], Not(DeepEquals), []string{""})
+	c.Assert(req.Header["X-Amz-Acl"], DeepEquals, []string{"authenticated-read"})
+	c.Assert(req.Header["X-Amz-Acl"], DeepEquals, []string{"authenticated-read"})
+	c.Assert(req.Header["X-Amz-Copy-Source"], DeepEquals, []string{"/bucket/original"})
+}
+func (s *S) TestCopyObject200Error(c *C) {
+	testServer.Response(200, nil, InternalErrorDump)
+
+	b := s.s3.Bucket("bucket")
+	err := b.Copy("name", "/bucket/original", s3.AuthenticatedRead)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "S3:InternalError: Not relevant")
 
 	req := testServer.WaitRequest()
 	c.Assert(req.Method, Equals, "PUT")

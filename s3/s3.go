@@ -184,14 +184,27 @@ func (b *Bucket) Metadata(path string) (map[string][]string, error) {
 // access to it.
 //
 // see http://goo.gl/ZjZeF for details.
-func (b *Bucket) ObjectAvailable(path string) bool {
+func (b *Bucket) ObjectAvailable(path string) (bool, error) {
 	req := &request{
 		method:  "HEAD",
 		bucket:  b.Name,
 		baseurl: "s3.amazonaws.com",
 		path:    path,
 	}
-	return b.S3.query(req, nil) == nil
+
+	if err := b.S3.query(req, nil); err != nil {
+		if s3err, ok := err.(*Error); ok {
+			// can't check just the Code == NoSuchKey, because we issue a HEAD
+			// request so we don't receive a body with the error description
+			// (where the Code would be). Just checking the 404 would be enough,
+			// but in case we ever change the method, let's also support the Code.
+			if s3err.StatusCode == 404 || s3err.Code == "NoSuchKey" {
+				return false, nil
+			}
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 // GetReader retrieves an object from a S3 bucket.

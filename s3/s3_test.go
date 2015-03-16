@@ -53,6 +53,36 @@ func (s *S) DisableRetries() {
 	s3.SetAttemptStrategy(&aws.AttemptStrategy{})
 }
 
+func (s *S) TestObjectAvailable(c *C) {
+	testServer.Response(200, nil, "")
+
+	b := s.s3.Bucket("samples")
+	ok, err := b.ObjectAvailable("exists")
+	testServer.WaitRequest()
+	c.Assert(err, IsNil)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *S) TestObjectNotAvailable(c *C) {
+	testServer.Response(404, nil, NoSuchKeyErrorDump)
+
+	b := s.s3.Bucket("samples")
+	ok, err := b.ObjectAvailable("notexists")
+	c.Assert(err, IsNil)
+	c.Assert(ok, Equals, false)
+	testServer.WaitRequest()
+}
+
+func (s *S) TestObjectAvailableError(c *C) {
+	testServer.Response(500, nil, "")
+
+	b := s.s3.Bucket("samples")
+	ok, err := b.ObjectAvailable("error")
+	c.Assert(err, NotNil)
+	c.Assert(ok, Equals, false)
+	testServer.WaitRequest()
+}
+
 // PutBucket docs: http://goo.gl/kBTCu
 
 func (s *S) TestPutBucket(c *C) {

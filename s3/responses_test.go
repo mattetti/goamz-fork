@@ -196,3 +196,13 @@ var InternalErrorDump = `
   <HostId>kjhwqk</HostId>
 </Error>
 `
+
+var NoSuchKeyErrorDump = `<?xml version="1.0" encoding="UTF-8"?>
+<Error>
+  <Code>NoSuchKey</Code>
+  <Message>Not relevant</Message>
+  <BucketName>sample</BucketName>
+  <RequestId>3F1B667FAD71C3D8</RequestId>
+  <HostId>kjhwqk</HostId>
+</Error>
+`

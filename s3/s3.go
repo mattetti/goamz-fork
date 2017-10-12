@@ -757,7 +757,7 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
-	return fmt.Sprintf("S3:%s: %s", e.Code, e.Message)
+	return fmt.Sprintf("S3:%s: %q %q %s", e.RequestId, e.HostId, e.Code, e.Message)
 }
 
 func buildError(r *http.Response) error {
@@ -779,6 +779,12 @@ func buildError(r *http.Response) error {
 	err.StatusCode = r.StatusCode
 	if err.Message == "" {
 		err.Message = r.Status
+	}
+	if err.RequestId == "" {
+		err.RequestId = r.Header.Get("x-amz-request-id")
+	}
+	if err.HostId == "" {
+		err.HostId = r.Header.Get("x-amz-id-2")
 	}
 	if debug {
 		log.Printf("err: %#v\n", err)

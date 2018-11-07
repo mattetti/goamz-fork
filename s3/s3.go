@@ -319,9 +319,9 @@ func (b *Bucket) Copy(path string, fromPath string, perm ACL) error {
 // See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html for details
 func (b *Bucket) CopyWithHeaders(path string, fromPath string, custHeaders CustomHeaders, perm ACL) error {
 	headers := map[string][]string{
-		// TODO : Here the `fromPath` should probably be amazonEscape`d, but
-		// I don't want to introduce changes to what already works
-		"x-amz-copy-source": {fromPath},
+		// Manually backported from https://github.com/mitchellh/goamz/blob/master/s3/s3.go#L346
+		// to support urlencodable characters and non-ascii characters.
+		"x-amz-copy-source": {amazonEscape(fromPath)},
 	}
 
 	if custHeaders != nil {
@@ -628,6 +628,9 @@ func (req *request) url() (*url.URL, error) {
 	if err != nil {
 		return nil, fmt.Errorf("bad S3 endpoint URL %q: %v", req.baseurl, err)
 	}
+	// Manually backported from https://github.com/mitchellh/goamz/blob/master/s3/s3.go#L698
+	// to support urlencodable characters and non-ascii characters.
+	u.Opaque = amazonEscape(req.path)
 	u.RawQuery = req.params.Encode()
 	u.Path = req.path
 	return u, nil

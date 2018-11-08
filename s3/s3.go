@@ -635,7 +635,6 @@ func (req *request) url(full bool) (*url.URL, error) {
 		u.Opaque = "//" + u.Host + u.Opaque
 	}
 	u.RawQuery = req.params.Encode()
-	u.Path = req.path
 	return u, nil
 }
 

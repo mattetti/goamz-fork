@@ -540,7 +540,7 @@ func (b *Bucket) URL(path string) string {
 	if err != nil {
 		panic(err)
 	}
-	u, err := req.url()
+	u, err := req.url(true)
 	if err != nil {
 		panic(err)
 	}
@@ -560,7 +560,7 @@ func (b *Bucket) SignedURL(path string, expires time.Time) string {
 	if err != nil {
 		panic(err)
 	}
-	u, err := req.url()
+	u, err := req.url(true)
 	if err != nil {
 		panic(err)
 	}
@@ -582,7 +582,7 @@ func (b *Bucket) SignedHeadURL(path string, expires time.Time) string {
 	if err != nil {
 		panic(err)
 	}
-	u, err := req.url()
+	u, err := req.url(true)
 	if err != nil {
 		panic(err)
 	}
@@ -604,7 +604,7 @@ func (b *Bucket) SignedAttachmentURL(path, filename string, expires time.Time) s
 	if err != nil {
 		panic(err)
 	}
-	u, err := req.url()
+	u, err := req.url(true)
 	if err != nil {
 		panic(err)
 	}
@@ -623,7 +623,7 @@ type request struct {
 	prepared bool
 }
 
-func (req *request) url() (*url.URL, error) {
+func (req *request) url(full bool) (*url.URL, error) {
 	u, err := url.Parse(req.baseurl)
 	if err != nil {
 		return nil, fmt.Errorf("bad S3 endpoint URL %q: %v", req.baseurl, err)
@@ -631,6 +631,9 @@ func (req *request) url() (*url.URL, error) {
 	// Manually backported from https://github.com/mitchellh/goamz/blob/master/s3/s3.go#L698
 	// to support urlencodable characters and non-ascii characters.
 	u.Opaque = amazonEscape(req.path)
+	if full {
+		u.Opaque = "//" + u.Host + u.Opaque
+	}
 	u.RawQuery = req.params.Encode()
 	u.Path = req.path
 	return u, nil
@@ -712,7 +715,7 @@ func (s3 *S3) run(req *request) (*http.Response, error) {
 		log.Printf("Running S3 request: %#v", req)
 	}
 
-	u, err := req.url()
+	u, err := req.url(false)
 	if err != nil {
 		return nil, err
 	}
